@@ -14,7 +14,11 @@
   <b>Content:</b>
   <%= @post.content %>
 </p>
-
+<!--tags-->
+<p>
+  <b>Tags: </b>
+  <%= join_tags(@post) %>
+</p>
 <!-- comment -->
 <h2>Comments</h2>
 <%= render @post.comments %>
