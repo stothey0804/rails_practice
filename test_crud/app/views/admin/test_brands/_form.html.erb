@@ -1,0 +1,94 @@
+<% content_for :end_of_body do %>
+  <script type="text/javascript">
+  $(document).ready(function(){
+      //code 입력 후 중복 여부 검증
+      $('#search-code').click(function(){
+          var code = $('#test_brand_code').val();
+
+          //exact=y 가 있을 경우 완전 일치 검색
+          $.get("/admin/product/test_brands/code_list.json?exact=y&code=" + encodeURIComponent(code), function(data) {
+              str = data;
+              if (str.length==0) {
+                  str='사용가능한 코드';
+              } else {
+                  str='이미 존재하는 코드입니다.';
+              }
+              $('#search-code-result').html(str);
+          });
+          return false;
+      });
+      //엔터 쳤을 때 위의 code 중복 여부 검증 실행
+      $('#test_brand_code').keypress(function(e) {
+          if(e.keyCode == 13) {
+              $('#search-code').trigger('click');
+          }
+      });
+  });
+  </script>
+<% end %>
+
+  <%= nested_form_for([:admin, @test_brand], html: { name: "form_test_brand", class: "form-horizontal" }) do |f| %>
+  <%= render :partial => 'shared/error', :locals => { :obj => @test_brand } %>
+    <div class="form-group">
+      <%= f.label :code, '브랜드코드', class: "control-label" %>
+      <div class="controls">
+        <%= f.text_field :code %><a href="#" class="btn btn-default btn-sm" id="search-code">검색</a>
+        <p class="help-block">브랜드 코드는 중복될 수 없습니다. &nbsp;&nbsp;&nbsp;<span id="search-code-result" style="color: red;"></span></p>
+      </div>
+    </div>
+    <div class="form-group">
+      <%= f.label :name, '브랜드명', class: "control-label" %>
+      <div class="controls">
+        <%= f.text_field   :name %>
+      </div>
+    </div>
+    <div class="form-group">
+      <%= f.label :korea_name, '브랜드한글명', class: "control-label" %>
+      <div class="controls">
+        <%= f.text_field   :korea_name %>
+      </div>
+    </div>
+     <div class="form-group">
+      <%= f.label :linup_count, '라인업 수', class: "control-label" %>
+      <div class="controls">
+        <%= f.number_field :linup_count %>
+      </div>
+    </div>
+    <div class="form-group">
+      <%= f.label :country, '지역', class: "control-label" %>
+      <div class="controls">
+        <%= f.text_field   :country %>
+      </div>
+    </div>
+    <!-- image upload-->
+    <%= f.fields_for :img_representative, f.object.img_representative || f.object.build_img_representative do |attachment_files_form| %>
+      <div class="form-group">
+        <%= attachment_files_form.label :filename, raw("브랜드 이미지"), class: 'control-label' %>
+
+        <div class="controls">
+          <%= attachment_files_form.file_field :filename, :class => "file-uploader", :data => {option:"single", btn:"btn btn-default btn-xs btn-primary", text: "파일추가"}%>
+
+          <% unless @test_brand.img_representative.new_record? %>
+            <p class="help-block">
+              <%= image_tag(@test_brand.img_representative.filename.thumb_235, :alt => @test_brand.name) %></p>
+            <%= attachment_files_form.check_box :_destroy, :style => "margin-top:-2px;" %>
+            <%= attachment_files_form.label :_destroy, "삭제" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <!-- description -->
+    <%= f.fields_for :description, f.object.description || f.object.build_description do |description_form| %>
+      <div class="form-group">
+        <%= description_form.label :description, '설명', class: 'control-label' %>
+        <div class="controls" style="margin-top:4px;">
+          <%= description_form.cktext_area :content %>
+        </div>
+      </div>
+    <% end %>
+
+  <div class="form-actions">
+    <%= f.submit :class => "btn btn-primary" %>
+    <%= link_to 'Back', admin_test_brands_path, :class => 'btn btn-inverse' %>
+  </div>
+<% end %>
